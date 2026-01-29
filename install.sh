@@ -26,15 +26,37 @@ if command -v go >/dev/null 2>&1; then
         # Check if GOBIN is in PATH
         GOBIN=$(go env GOPATH)/bin
         if [[ ":$PATH:" != *":$GOBIN:"* ]]; then
-             echo -e "${RED}[WARNING] $GOBIN is not in your PATH.${NC}"
-             echo "Please add it to your shell config (e.g. ~/.bashrc):"
-             echo "  export PATH=\$PATH:$GOBIN"
-             echo "Then try running: lazyports"
+             echo -e "${BLUE}[INFO] $GOBIN is not in your PATH.${NC}"
+             
+             SHELL_CONFIG=""
+             if [ -f "$HOME/.bashrc" ]; then
+                 SHELL_CONFIG="$HOME/.bashrc"
+             elif [ -f "$HOME/.zshrc" ]; then
+                 SHELL_CONFIG="$HOME/.zshrc"
+             fi
+
+             if [ -n "$SHELL_CONFIG" ]; then
+                 echo -e "${BLUE}[+] detected $SHELL_CONFIG. Appending to PATH...${NC}"
+                 if grep -q "$GOBIN" "$SHELL_CONFIG"; then
+                      echo -e "${GREEN}[NOTE] PATH already configured in $SHELL_CONFIG.${NC}"
+                 else
+                      echo "" >> "$SHELL_CONFIG"
+                      echo "# Added by Lazyports installer" >> "$SHELL_CONFIG"
+                      echo "export PATH=\$PATH:$GOBIN" >> "$SHELL_CONFIG"
+                      echo -e "${GREEN}[SUCCESS] Added $GOBIN to $SHELL_CONFIG${NC}"
+                 fi
+                 echo -e "${BLUE}IMPORTANT: Run the following command to load the changes now:${NC}"
+                 echo -e "    ${GREEN}source $SHELL_CONFIG${NC}"
+             else
+                 echo -e "${RED}[WARNING] Could not detect shell config. Manual step required:${NC}"
+                 echo "Please add this to your shell config:"
+                 echo "  export PATH=\$PATH:$GOBIN"
+             fi
         else
              echo "Run 'lazyports' to start the application."
         fi
     else
-        echo -e "${RED}[ERROR] Installation failed.${NC}"
+        echo -e "${RED}[ERROR] Installation failed. Please check your Go installation.${NC}"
         exit 1
     fi
 else
