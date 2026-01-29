@@ -15,15 +15,15 @@ import (
 var (
 	baseStyle = lipgloss.NewStyle().
 			BorderStyle(lipgloss.NormalBorder()).
-			BorderForeground(lipgloss.Color("240"))
+			BorderForeground(lipgloss.Color("#6c7086")) // Overlay0
 
 	// Status/Footer styles
-	statusStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
-	helpStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("241")).MarginTop(1)
+	statusStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#f5c2e7"))              // Pink
+	helpStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("#6c7086")).MarginTop(1) // Overlay0
 
 	// Logo Style
 	logoStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("57")).
+			Foreground(lipgloss.Color("#cba6f7")). // Mauve
 			Bold(true).
 			MarginBottom(1)
 )
@@ -262,12 +262,12 @@ func main() {
 	s := table.DefaultStyles()
 	s.Header = s.Header.
 		BorderStyle(lipgloss.NormalBorder()).
-		BorderForeground(lipgloss.Color("240")).
+		BorderForeground(lipgloss.Color("#6c7086")). // Overlay0
 		BorderBottom(true).
 		Bold(true)
 	s.Selected = s.Selected.
-		Foreground(lipgloss.Color("229")).
-		Background(lipgloss.Color("57")).
+		Foreground(lipgloss.Color("#cdd6f4")). // Text
+		Background(lipgloss.Color("#313244")). // Surface0
 		Bold(false)
 	t.SetStyles(s)
 
