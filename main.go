@@ -171,15 +171,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
-		baseStyle = baseStyle.Width(m.width - 2).Height(m.height - 4) // Reserve space for borders/footer
+
+		// Logo (4 lines) + Footer (2 lines) + Borders (2 lines) = ~8 lines of chrome
+		// We set proper height constraints to ensure View() string <= m.height
+		availableHeight := m.height - 8
+
+		baseStyle = baseStyle.Width(m.width - 2).Height(availableHeight)
 		m.table.SetWidth(m.width - 4)
-		// Calculate table height: Window height - header/borders - footer - LOGO
-		// Logo takes 3 lines + margin = 4 lines approximately.
-		// Borders/Footer take ~6 lines
-		// Total chrome = 10 lines
-		tableHeight := m.height - 10
-		if tableHeight < 3 {
-			tableHeight = 3
+
+		// Internal table height inside the border
+		// baseStyle has borders, so subtract 2 more
+		tableHeight := availableHeight - 2
+		if tableHeight < 2 {
+			tableHeight = 2
 		}
 		m.table.SetHeight(tableHeight)
 
