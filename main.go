@@ -172,9 +172,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 
-		// Logo (4 lines) + Footer (2 lines) + Borders (2 lines) = ~8 lines of chrome
+		// Logo (2 lines) + Footer (2 lines) + Borders (2 lines) = ~6 lines of chrome
 		// We set proper height constraints to ensure View() string <= m.height
-		availableHeight := m.height - 8
+		availableHeight := m.height - 7 // 7 to be safe
 
 		baseStyle = baseStyle.Width(m.width - 2).Height(availableHeight)
 		m.table.SetWidth(m.width - 4)
@@ -226,11 +226,7 @@ func (m model) View() string {
 		return fmt.Sprintf("Error: %v\nPress 'q' to quit", m.err)
 	}
 
-	logoStr := `
-┬  ┌─┐┌─┐┬ ┬  ┌─┐┌─┐┬─┐┌┬┐┌─┐
-│  ├─┤┌─┘└┬┘  ├─┘│ │├┬┘ │ └─┐
-┴─┘┴ ┴└─┘ ┴   ┴  └─┘┴└─ ┴ └─┘`
-	logo := logoStyle.Render(logoStr)
+	logo := logoStyle.Render("⚡ LazyPorts")
 	tableView := baseStyle.Render(m.table.View())
 
 	// Footer
