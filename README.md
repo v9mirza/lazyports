@@ -24,6 +24,18 @@ curl -sL https://raw.githubusercontent.com/v9mirza/lazyports/main/install.sh | b
 
 *Note: The script may request `sudo` permission to install the binary to `/usr/local/bin` for system-wide access.*
 
+## Uninstallation
+
+To remove `lazyports` from your system, simply delete the binary:
+
+```bash
+# Remove system-wide installation
+sudo rm /usr/local/bin/lazyports
+
+# Remove user-local installation
+rm ~/go/bin/lazyports
+```
+
 ## Usage
 
 Run the tool from your terminal:

@@ -25,23 +25,22 @@ if command -v go >/dev/null 2>&1; then
         
         # Check if GOBIN is in PATH
         GOBIN=$(go env GOPATH)/bin
-        if [[ ":$PATH:" != *":$GOBIN:"* ]]; then
-             # Try to install to /usr/local/bin for immediate access
-             if [ -w "/usr/local/bin" ] || command -v sudo >/dev/null 2>&1; then
-                 echo -e "${BLUE}[INFO] Installing to /usr/local/bin for global access...${NC}"
-                 if [ -w "/usr/local/bin" ]; then
-                     cp "$GOBIN/$BINARY" "/usr/local/bin/$BINARY"
-                 else
-                     echo -e "${BLUE}[sudo] Enter password to move binary to /usr/local/bin:${NC}"
-                     sudo cp "$GOBIN/$BINARY" "/usr/local/bin/$BINARY"
-                 fi
-                 
-                 if [ -f "/usr/local/bin/$BINARY" ]; then
-                     echo -e "${GREEN}[SUCCESS] Installed to /usr/local/bin/lazyports!${NC}"
-                     echo "You can run 'lazyports' immediately."
-                     exit 0
-                 fi
+        # Always try to install to /usr/local/bin for sudo support
+        if [ -w "/usr/local/bin" ] || command -v sudo >/dev/null 2>&1; then
+             echo -e "${BLUE}[INFO] Installing to /usr/local/bin for global access (required for sudo)...${NC}"
+             if [ -w "/usr/local/bin" ]; then
+                 cp "$GOBIN/$BINARY" "/usr/local/bin/$BINARY"
+             else
+                 echo -e "${BLUE}[sudo] Enter password to move binary to /usr/local/bin:${NC}"
+                 sudo cp "$GOBIN/$BINARY" "/usr/local/bin/$BINARY"
              fi
+             
+             if [ -f "/usr/local/bin/$BINARY" ]; then
+                 echo -e "${GREEN}[SUCCESS] Installed to /usr/local/bin/lazyports!${NC}"
+             fi
+        fi
+
+        if [[ ":$PATH:" != *":$GOBIN:"* ]]; then
 
              echo -e "${BLUE}[INFO] $GOBIN is not in your PATH.${NC}"
              
