@@ -37,6 +37,8 @@ lazyports
 | Key | Action |
 | :--- | :--- |
 | `↑` / `↓` | Navigate list |
+| `/` | **Filter / Search** ports |
+| `Enter` | **View Details** (User, Path, Time) |
 | `k` | Kill selected process |
 | `r` | Refresh list |
 | `q` | Quit |
@@ -44,8 +46,11 @@ lazyports
 ## Features
 
 -   **Interactive Table**: Clean visualization of open ports (TCP/UDP).
+-   **Smart Filtering**: Type `/` to instantly filter by port, PID, or process name.
+-   **Detailed Inspection**: Press `Enter` to see full command, user, and start time.
 -   **Process Management**: Terminate blocking processes instantly.
 -   **Smart Detection**: Identifies system services (like SSH/DNS) and their ports even without sudo.
+-   **Auto-Sorting**: Ports are automatically sorted numerically for easy scanning.
 -   **Visual States**: Distinct indicators for `LISTEN` and `ESTAB` connections.
 -   **Zero Config**: Works out of the box with automatic shell path configuration.
 
