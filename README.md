@@ -59,7 +59,12 @@ lazyports
 
 -   **Interactive Table**: Clean visualization of open ports (TCP/UDP).
 -   **Smart Filtering**: Type `/` to instantly filter by port, PID, or process name.
+-   **Smart Filtering**: Type `/` to instantly filter by port, PID, or process name.
 -   **Detailed Inspection**: Press `Enter` to see full command, user, and start time.
+
+    ![Details View](assets/details.png)
+
+-   **Process Management**: Terminate blocking processes instantly.
 -   **Process Management**: Terminate blocking processes instantly.
 -   **Smart Detection**: Identifies system services (like SSH/DNS) and their ports even without sudo.
 -   **Auto-Sorting**: Ports are automatically sorted numerically for easy scanning.
