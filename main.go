@@ -26,6 +26,24 @@ var (
 			Foreground(lipgloss.Color("#cba6f7")). // Mauve
 			Bold(true).
 			MarginBottom(1)
+
+	// Common ports mapping for guessing services when running without sudo
+	commonPorts = map[string]string{
+		"21":    "FTP",
+		"22":    "SSH",
+		"23":    "Telnet",
+		"25":    "SMTP",
+		"53":    "DNS",
+		"80":    "HTTP",
+		"110":   "POP3",
+		"143":   "IMAP",
+		"443":   "HTTPS",
+		"3306":  "MySQL",
+		"5432":  "PostgreSQL",
+		"6379":  "Redis",
+		"8080":  "HTTP-Alt",
+		"27017": "MongoDB",
+	}
 )
 
 // PortEntry represents a single process listening on a port
@@ -112,7 +130,12 @@ func getPorts() ([]PortEntry, error) {
 		}
 
 		if pid == "" {
-			continue
+			pid = "-"
+			if service, ok := commonPorts[port]; ok {
+				process = fmt.Sprintf("%s (requires sudo)", service)
+			} else {
+				process = "(requires sudo)"
+			}
 		}
 
 		entries = append(entries, PortEntry{
@@ -156,6 +179,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if selectedIdx >= 0 && selectedIdx < len(m.entries) {
 					// The table rows correspond 1:1 to m.entries
 					target := m.entries[selectedIdx]
+					if target.PID == "-" {
+						m.status = "Run as sudo to kill this process"
+						return m, nil
+					}
 					err := killProcess(target.PID)
 					if err != nil {
 						m.status = fmt.Sprintf("Error killing %s: %v", target.PID, err)

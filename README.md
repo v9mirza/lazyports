@@ -45,6 +45,7 @@ lazyports
 
 -   **Interactive Table**: Clean visualization of open ports (TCP/UDP).
 -   **Process Management**: Terminate blocking processes instantly.
+-   **Smart Detection**: Identifies system services (like SSH/DNS) and their ports even without sudo.
 -   **Visual States**: Distinct indicators for `LISTEN` and `ESTAB` connections.
 -   **Zero Config**: Works out of the box with automatic shell path configuration.
 
