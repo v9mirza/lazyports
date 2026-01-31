@@ -153,10 +153,16 @@ func getPorts() ([]PortEntry, error) {
 
 		if pid == "" {
 			pid = "-"
+			isRoot := os.Geteuid() == 0
+			suffix := "(requires sudo)"
+			if isRoot {
+				suffix = "(system)"
+			}
+
 			if service, ok := commonPorts[port]; ok {
-				process = fmt.Sprintf("%s (requires sudo)", service)
+				process = fmt.Sprintf("%s %s", service, suffix)
 			} else {
-				process = "(requires sudo)"
+				process = suffix
 			}
 		}
 
@@ -202,6 +208,9 @@ func killProcess(pid string) error {
 
 func getProcessDetails(pid string) (string, error) {
 	if pid == "-" {
+		if os.Geteuid() == 0 {
+			return "System process (no detailed information available).", nil
+		}
 		return "Process details require sudo privileges.", nil
 	}
 
@@ -289,7 +298,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if selectedIdx >= 0 && selectedIdx < len(m.filteredEntries) {
 					target := m.filteredEntries[selectedIdx]
 					if target.PID == "-" {
-						m.status = "Run as sudo to kill this process"
+						if os.Geteuid() == 0 {
+							m.status = "Cannot kill system process"
+						} else {
+							m.status = "Run as sudo to kill this process"
+						}
 						return m, nil
 					}
 					err := killProcess(target.PID)
