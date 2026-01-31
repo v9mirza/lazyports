@@ -5,10 +5,21 @@ import (
 	"os"
 	"strings"
 
+	"sort"
+	"strconv"
+
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+)
+
+type SortMode int
+
+const (
+	SortByPort SortMode = iota
+	SortByProcess
+	SortByPID
 )
 
 // PortEntry represents a single process listening on a port
@@ -33,6 +44,7 @@ type model struct {
 	isFiltering     bool
 	showDetails     bool
 	detailsContent  string
+	sortMode        SortMode
 }
 
 func (m model) Init() tea.Cmd {
@@ -91,6 +103,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "r":
 			m.status = "Refreshing..."
 			return m, loadPorts
+		case "s":
+			m.sortMode++
+			if m.sortMode > SortByPID {
+				m.sortMode = SortByPort
+			}
+			m.sortEntries()
+			m.updateTableColumns()
+			m.updateTable()
 		case "enter":
 			if len(m.filteredEntries) > 0 {
 				selectedIdx := m.table.Cursor()
@@ -160,7 +180,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case []PortEntry:
 		m.entries = msg
-		m.filterEntries() // Initial filter (or reset)
+		m.sortEntries()        // Initial sort
+		m.filterEntries()      // Initial filter (or reset)
+		m.updateTableColumns() // Initial columns state
 		m.err = nil
 		if m.status == "Refreshing..." {
 			m.status = "Refreshed"
@@ -172,6 +194,62 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	m.table, cmd = m.table.Update(msg)
 	return m, cmd
+}
+
+func (m *model) sortEntries() {
+	sort.Slice(m.entries, func(i, j int) bool {
+		switch m.sortMode {
+		case SortByProcess:
+			return strings.ToLower(m.entries[i].Process) < strings.ToLower(m.entries[j].Process)
+		case SortByPID:
+			// Handle "-" first or last? Let's say "-" is last (largest)
+			if m.entries[i].PID == "-" {
+				return false
+			}
+			if m.entries[j].PID == "-" {
+				return true
+			}
+			pid1, _ := strconv.Atoi(m.entries[i].PID)
+			pid2, _ := strconv.Atoi(m.entries[j].PID)
+			return pid1 < pid2
+		default: // SortByPort
+			p1, err1 := strconv.Atoi(m.entries[i].Port)
+			p2, err2 := strconv.Atoi(m.entries[j].Port)
+			if err1 == nil && err2 == nil {
+				if p1 == p2 {
+					return m.entries[i].Protocol < m.entries[j].Protocol
+				}
+				return p1 < p2
+			}
+			return m.entries[i].Port < m.entries[j].Port
+		}
+	})
+	// Re-filter after sorting (filter preserves order usually, but safer to re-filter)
+	m.filterEntries()
+}
+
+func (m *model) updateTableColumns() {
+	columns := []table.Column{
+		{Title: "Port", Width: 8},
+		{Title: "Proto", Width: 6},
+		{Title: "State", Width: 12},
+		{Title: "PID", Width: 8},
+		{Title: "Address", Width: 20},
+		{Title: "Process", Width: 20}, // Flexible
+	}
+
+	// Add arrow indicator
+	arrow := " ▼"
+	switch m.sortMode {
+	case SortByPort:
+		columns[0].Title += arrow
+	case SortByPID:
+		columns[3].Title += arrow
+	case SortByProcess:
+		columns[5].Title += arrow
+	}
+
+	m.table.SetColumns(columns)
 }
 
 func (m *model) filterEntries() {
@@ -234,7 +312,7 @@ func (m model) View() string {
 	tableView := baseStyle.Render(m.table.View())
 
 	// Footer
-	controls := "↑/↓: Navigate • /: Filter • Enter: Details • k: Kill • r: Refresh • q: Quit"
+	controls := "↑/↓: Navigate • /: Filter • Enter: Details • k: Kill • r: Refresh • s: Sort • q: Quit"
 	if m.isFiltering {
 		controls = "Type to search • Esc/Enter: Done"
 		// Render Input
@@ -242,9 +320,17 @@ func (m model) View() string {
 		// Replace bottom area
 		return fmt.Sprintf("%s\n%s\n%s\n%s", logo, tableView, inputView, helpStyle.Render(controls))
 	} else {
-		if m.status != "" {
-			controls = statusStyle.Render(m.status) + " • " + controls
+		status := m.status
+		if status != "" {
+			controls = statusStyle.Render(status) + " • " + controls
 		}
+
+		// Optional: Show current sort mode in status
+		// sortStr := "Port"
+		// if m.sortMode == SortByPID { sortStr = "PID" }
+		// else if m.sortMode == SortByProcess { sortStr = "Process" }
+		// controls += fmt.Sprintf(" • Sort: %s", sortStr)
+
 		return fmt.Sprintf("%s\n%s\n%s", logo, tableView, helpStyle.Render(controls))
 	}
 }
